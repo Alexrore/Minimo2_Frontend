@@ -8,11 +8,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.core.splashscreen.SplashScreen;
+import android.content.Intent;
 
 import com.example.restclientapp.api.AuthService;
 import com.example.restclientapp.api.RetrofitClient;
 import com.example.restclientapp.model.User;
 import com.example.restclientapp.model.Verificacion;
+
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,6 +35,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
+
+        // Verificar si ya hay sesión iniciada
+        SessionManager sessionManager = new SessionManager(getApplicationContext());
+
+        if (sessionManager.estalogueado()) {
+            // ¡Ya está logueado! Vamos directo a la tienda/juego
+            Intent intent = new Intent(MainActivity.this, Menu.class);
+            startActivity(intent);
+            finish(); // Cerramos esta actividad para que no vuelva aquí
+            return; // Importante para que no cargue el layout del login
+        }
+
+        // Si no está logueado, mostramos la pantalla de Login normal
         setContentView(R.layout.activity_main);
 
         emailEditText = findViewById(R.id.edit_text_email);
