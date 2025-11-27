@@ -6,9 +6,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import androidx.core.splashscreen.SplashScreen;
 import android.content.Intent;
+
 
 import com.example.restclientapp.api.AuthService;
 import com.example.restclientapp.api.RetrofitClient;
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private Button registerButton;
     private EditText codigoEditText;
     private Button verificarButton;
+    private ProgressBar progressBar;
     private String ultimoemailregistrado = null;
 
 
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         registerButton = findViewById(R.id.button_register);
         codigoEditText = findViewById(R.id.editTextNumber);
         verificarButton = findViewById(R.id.button);
+        progressBar = findViewById(R.id.progressBar);
 
 
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -77,6 +81,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void showLoading(boolean isLoading) {
+        if (isLoading) {
+            progressBar.setVisibility(View.VISIBLE);
+            // Desactivar botones para que no pulsen dos veces
+            emailEditText.setEnabled(false);
+            passwordEditText.setEnabled(false);
+            codigoEditText.setEnabled(false);
+            loginButton.setEnabled(false);
+            registerButton.setEnabled(false);
+            verificarButton.setEnabled(false);
+        } else {
+            progressBar.setVisibility(View.GONE);
+            // Reactivar botones
+            emailEditText.setEnabled(true);
+            passwordEditText.setEnabled(true);
+            codigoEditText.setEnabled(true);
+            loginButton.setEnabled(true);
+            registerButton.setEnabled(true);
+            verificarButton.setEnabled(true);
+        }
+    }
 
     private void performLogin() {
         String email = emailEditText.getText().toString().trim();
@@ -87,13 +112,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         User loginRequest = new User(email, password);
-
+        showLoading(true);
         AuthService service = RetrofitClient.getApiService();
         Call<User> call = service.login(loginRequest);
 
         call.enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
+                showLoading(false);
                 if (response.isSuccessful() && response.body() != null) {
                     // 200 (Login exitoso).
                     User loggedInUser = response.body();
@@ -123,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<User> call, Throwable t) {
                 //FALLO DE CONEXIÓN: Error de red o servidor no disponible.
+                showLoading(false);
                 Log.e("LOGIN", "Fallo de conexión: " + t.getMessage());
                 Toast.makeText(MainActivity.this,
                         "Error de red: ¿Está el servidor corriendo en 10.0.2.2:8080/dsaApp/ ?",
@@ -138,12 +165,14 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Introduce el email y la contraseña.", Toast.LENGTH_SHORT).show();
             return;
         }
+        showLoading(true);
         User registerRequest = new User(email, password);
         AuthService service = RetrofitClient.getApiService();
         Call<Void> call = service.register(registerRequest);
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
+                showLoading(false);
                 if (response.isSuccessful()) {
                     // 201 (Registro exitoso)
                     Toast.makeText(MainActivity.this,
@@ -180,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
+                showLoading(false);
                 Log.e("REGISTER", "Fallo de conexión: " + t.getMessage());
                 Toast.makeText(MainActivity.this,
                         "Error de red: ¿El servidor está corriendo?",
@@ -200,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Introduce el código de verificación.", Toast.LENGTH_SHORT).show();
                 return;
             }
+            showLoading(true);
             Verificacion verificacion = new Verificacion(ultimoemailregistrado, codigo);
             AuthService service = RetrofitClient.getApiService();
             Call<Void> call = service.verifyAccount(verificacion);
@@ -207,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
             call.enqueue(new Callback<Void>() {
                 @Override
                 public void onResponse(Call<Void> call, Response<Void> response) {
+                    showLoading(false);
 
                     if (response.isSuccessful()) {
                         Toast.makeText(MainActivity.this,
@@ -236,6 +268,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<Void> call, Throwable t) {
+                    showLoading(false);
                     Toast.makeText(MainActivity.this,
                             "Error de conexión: " + t.getMessage(),
                             Toast.LENGTH_LONG).show();
