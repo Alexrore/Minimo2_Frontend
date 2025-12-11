@@ -1,11 +1,8 @@
 package com.example.restclientapp.api;
 
-import com.example.restclientapp.model.UserLoginRequest;
-import com.example.restclientapp.model.LoginResponse;
-import com.example.restclientapp.model.User;
-import com.example.restclientapp.model.Verificacion;
-import com.example.restclientapp.model.ObjetoCompra;
-import com.example.restclientapp.model.Producto;
+
+import com.example.restclientapp.model.*;
+
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -31,6 +28,10 @@ public interface AuthService {
 
     @GET("productos/")
     Call<List<Producto>> getProductos();
+
+    // En tu interfaz AuthService
+    @GET("productos/inventario/{userId}")
+    Call<List<Inventory>> getInventarioUsuario(@Path("userId") int userId);
 
     @POST("productos/comprar")
     Call<Void> comprarProducto(@Body ObjetoCompra compra);

@@ -15,9 +15,7 @@ import android.content.SharedPreferences;
 
 import com.example.restclientapp.api.AuthService;
 import com.example.restclientapp.api.RetrofitClient;
-import com.example.restclientapp.model.ObjetoCompra;
-import com.example.restclientapp.model.Producto;
-import com.example.restclientapp.model.User;
+import com.example.restclientapp.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +35,7 @@ public class TiendaActivity extends AppCompatActivity {
 
     private String currentUserEmail;
     private User currentUserData;
+    private List<Producto> catalogoCache = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,9 +100,12 @@ public class TiendaActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+
+                    // 2. GUARDAMOS LA LISTA EN LA VARIABLE GLOBAL
+                    catalogoCache = response.body();
+
                     List<ProductosAdapter.ItemDisplay> items = new ArrayList<>();
                     for (Producto p : response.body()) {
-                        // El constructor ahora extrae p.getId() internamente
                         items.add(new ProductosAdapter.ItemDisplay(p));
                     }
                     adapter.setItems(items);
@@ -120,26 +122,45 @@ public class TiendaActivity extends AppCompatActivity {
         btnTabMercado.setAlpha(0.5f);
         btnTabInventario.setAlpha(1.0f);
 
+        // Recuperamos el ID numérico (Asegúrate de haberlo guardado en Login)
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        int userId = prefs.getInt("userId", -1);
+
+        if (userId == -1) return;
+
         AuthService service = RetrofitClient.getApiService();
-        service.getUser(currentUserEmail).enqueue(new Callback<User>() {
+        // Llamamos al nuevo endpoint que devuelve List<Inventory>
+        Call<List<Inventory>> call = service.getInventarioUsuario(userId);
+
+        call.enqueue(new Callback<List<Inventory>>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
+            public void onResponse(Call<List<Inventory>> call, Response<List<Inventory>> response) {
                 if(response.isSuccessful() && response.body() != null) {
-                    currentUserData = response.body();
-                    Map<String, Integer> inventarioMap = currentUserData.getInventario();
+                    List<Inventory> inventarioRaw = response.body();
                     List<ProductosAdapter.ItemDisplay> items = new ArrayList<>();
 
-                    if (inventarioMap != null) {
-                        for (Map.Entry<String, Integer> entry : inventarioMap.entrySet()) {
-                            // Constructor de inventario (sin ID)
-                            items.add(new ProductosAdapter.ItemDisplay(entry.getKey(), entry.getValue()));
+                    // 4. CRUZAMOS LOS DATOS (MATCHING)
+                    for (Inventory inv : inventarioRaw) {
+                        // Buscamos el nombre en el catálogo usando el itemId
+                        String nombreProducto = "Item Desconocido";
+
+                        for (Producto p : catalogoCache) {
+                            if (p.getId() == inv.getItemId()) {
+                                nombreProducto = p.getNombreproducto();
+                                break;
+                            }
                         }
+
+                        // Añadimos a la lista visual
+                        items.add(new ProductosAdapter.ItemDisplay(nombreProducto, inv.getCantidad()));
                     }
                     adapter.setItems(items);
                 }
             }
             @Override
-            public void onFailure(Call<User> call, Throwable t) { }
+            public void onFailure(Call<List<Inventory>> call, Throwable t) {
+                Toast.makeText(TiendaActivity.this, "Error al cargar inventario", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

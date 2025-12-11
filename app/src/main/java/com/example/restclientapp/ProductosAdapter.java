@@ -1,48 +1,49 @@
-package com.example.restclientapp;
+package com.example.restclientapp; // <--- AJUSTA TU PAQUETE
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.restclientapp.model.Producto;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductosAdapter extends RecyclerView.Adapter<ProductosAdapter.ViewHolder> {
 
+    // --- CLASE INTERNA PARA MOSTRAR DATOS ---
     public static class ItemDisplay {
-        int id; // <--- NUEVO: ID NUMÉRICO
-        String nombre;
-        int precio;
-        int cantidad;
-        boolean esTienda;
+        public int id;
+        public String nombre;
+        public int valor; // Puede ser precio o cantidad
+        public boolean esInventario; // Para saber si mostrar botón "Comprar" o "Cantidad"
 
-        // Constructor TIENDA (Extraemos el ID del producto)
+        // Constructor para TIENDA (Producto)
         public ItemDisplay(Producto p) {
-            this.id = p.getId(); // Asegúrate de tener getId() en tu clase Producto
+            this.id = p.getId();
             this.nombre = p.getNombreproducto();
-            this.precio = p.getPrecio();
-            this.esTienda = true;
+            this.valor = p.getPrecio();
+            this.esInventario = false;
         }
 
-        // Constructor INVENTARIO (No hay ID de compra, ponemos -1)
+        // Constructor para INVENTARIO (Nombre y Cantidad)
         public ItemDisplay(String nombre, int cantidad) {
-            this.id = -1;
+            this.id = -1; // No se usa para comprar
             this.nombre = nombre;
-            this.cantidad = cantidad;
-            this.esTienda = false;
+            this.valor = cantidad;
+            this.esInventario = true;
         }
     }
 
-    private List<ItemDisplay> listaItems = new ArrayList<>();
+    private List<ItemDisplay> items = new ArrayList<>();
     private OnItemClickListener listener;
 
-    // INTERFAZ ACTUALIZADA: Recibe int en vez de String
     public interface OnItemClickListener {
         void onComprarClick(int idProducto);
     }
@@ -51,76 +52,86 @@ public class ProductosAdapter extends RecyclerView.Adapter<ProductosAdapter.View
         this.listener = listener;
     }
 
-    public void setItems(List<ItemDisplay> nuevosItems) {
-        this.listaItems = nuevosItems;
+    public void setItems(List<ItemDisplay> items) {
+        this.items = items;
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_producto, parent, false);
-        return new ViewHolder(v);
+        // Asegúrate de tener un layout llamado 'item_producto.xml'
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_producto, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ItemDisplay item = listaItems.get(position);
+        ItemDisplay item = items.get(position);
 
         holder.tvNombre.setText(item.nombre);
 
-        // Cargar imagen (Tu lógica de imágenes se mantiene igual)
-        int resId = obtenerIdImagen(holder.itemView.getContext(), item.nombre);
-        holder.imgProducto.setImageResource(resId);
+        // 🖼️ LA MAGIA DE LAS IMÁGENES ESTÁ AQUÍ
+        int imageResId = getImageResource(item.nombre);
+        holder.ivIcono.setImageResource(imageResId);
 
-        if (item.esTienda) {
-            holder.tvPrecio.setText(item.precio + " CR");
-            holder.tvPrecio.setVisibility(View.VISIBLE);
+        if (item.esInventario) {
+            // MODO INVENTARIO: Mostramos cantidad
+            holder.tvPrecio.setText("x" + item.valor);
+            holder.btnComprar.setVisibility(View.GONE); // Ocultar botón comprar
+        } else {
+            // MODO TIENDA: Mostramos precio y botón
+            holder.tvPrecio.setText(item.valor + " CR");
             holder.btnComprar.setVisibility(View.VISIBLE);
-            holder.tvCantidad.setVisibility(View.GONE);
-
-            // CLICK: Pasamos el ID (int)
             holder.btnComprar.setOnClickListener(v -> {
                 if (listener != null) listener.onComprarClick(item.id);
             });
-
-        } else {
-            holder.tvPrecio.setVisibility(View.GONE);
-            holder.btnComprar.setVisibility(View.GONE);
-            holder.tvCantidad.setText("x" + item.cantidad);
-            holder.tvCantidad.setVisibility(View.VISIBLE);
         }
     }
 
-    // ... (Mantén tu método obtenerIdImagen tal cual lo tenías) ...
-    private int obtenerIdImagen(Context context, String nombreItem) {
-        String nombreNormalizado = (nombreItem != null) ? nombreItem.toLowerCase() : "default";
-        String nombreDrawable;
-
-        if (nombreNormalizado.contains("katana")) nombreDrawable = "katana";
-        else if (nombreNormalizado.contains("jeringuilla")) nombreDrawable = "jeringuilla";
-        else if (nombreNormalizado.contains("chaleco")) nombreDrawable = "chaleco";
-        else if (nombreNormalizado.contains("cubo")) nombreDrawable = "energia";
-        else nombreDrawable = "ic_launcher_foreground";
-
-        return context.getResources().getIdentifier(nombreDrawable, "drawable", context.getPackageName());
+    @Override
+    public int getItemCount() {
+        return items.size();
     }
 
-    @Override
-    public int getItemCount() { return listaItems.size(); }
+    // -------------------------------------------------------------
+    // 🎨 FUNCIÓN TRADUCTORA: DE TEXTO A IMAGEN (DRAWABLE)
+    // -------------------------------------------------------------
+    private int getImageResource(String nombreProducto) {
+        if (nombreProducto == null) return R.drawable.katana;
 
+        // Convertimos a minúsculas para evitar errores (Ej: "Katana" vs "katana")
+        switch (nombreProducto.toLowerCase()) {
+            case "katana":
+                return R.drawable.katana;
+            case "jeringuilla":
+                return R.drawable.jeringuilla;
+            case "chaleco antibalas":
+            case "chaleco": // Por si acaso cambias el nombre
+                return R.drawable.chaleco; // Asegúrate de tener chaleco.png
+            case "bloque de energia":
+            case "bloque":
+                return R.drawable.energia; // Asegúrate de tener energia.png
+            default:
+                // Si no coincide, devolvemos una imagen por defecto
+                return R.drawable.katana;
+        }
+    }
+
+    // --- VIEWHOLDER ---
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvNombre, tvPrecio, tvCantidad;
+        TextView tvNombre, tvPrecio;
+        ImageView ivIcono;
         Button btnComprar;
-        ImageView imgProducto;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvNombre = itemView.findViewById(R.id.tvNombreProducto);
-            tvPrecio = itemView.findViewById(R.id.tvPrecioProducto);
-            tvCantidad = itemView.findViewById(R.id.tvCantidad);
-            btnComprar = itemView.findViewById(R.id.btnAccion);
-            imgProducto = itemView.findViewById(R.id.imgProducto);
+            // Asegúrate de que estos ID coinciden con tu 'item_producto.xml'
+            tvNombre = itemView.findViewById(R.id.tvItemName);
+            tvPrecio = itemView.findViewById(R.id.tvItemPrice);
+            ivIcono = itemView.findViewById(R.id.ivItemImage);
+            btnComprar = itemView.findViewById(R.id.btnItemAction);
         }
     }
 }
