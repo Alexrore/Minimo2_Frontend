@@ -35,6 +35,7 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     implementation "androidx.core:core-splashscreen:1.0.1"
+    implementation 'com.squareup.picasso:picasso:2.71828'
 
     //Dependencias añadidas para la REST
     //Retrofit (Peticiones HTTP)

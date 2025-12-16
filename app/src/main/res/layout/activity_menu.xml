@@ -36,11 +36,14 @@
         app:layout_constraintTop_toBottomOf="@+id/txtHeader" />
 
     <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -58,16 +61,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="🛒"
-                    android:textSize="30sp"/>
+                    android:textSize="30sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:letterSpacing="0.1"
                     android:text="IR A LA TIENDA"
                     android:textColor="@color/neon_cyan"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.1"
-                    android:layout_marginTop="8dp"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <Button
@@ -76,6 +79,35 @@
                 android:layout_height="120dp"
                 android:background="?attr/selectableItemBackground"
                 android:text="" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="@drawable/bg_glass_panel"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="MOSTRAR EVENTOS"
+                    android:textColor="#7BB4E3"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnEventos"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="?attr/selectableItemBackground"
+                android:text="" />
+
         </FrameLayout>
 
         <FrameLayout
@@ -91,10 +123,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
                     android:text="CERRAR SESIÓN"
                     android:textColor="#FF3860"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.1"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <Button
@@ -103,8 +135,7 @@
                 android:layout_height="80dp"
                 android:background="?attr/selectableItemBackground"
                 android:text="" />
+
         </FrameLayout>
 
-    </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout> </androidx.constraintlayout.widget.ConstraintLayout>

@@ -50,9 +50,14 @@ public class Menu extends AppCompatActivity {
                 Intent intent = new Intent(Menu.this, TiendaActivity.class);
                 startActivity(intent);
 
-                // NOTA: Aquí NO ponemos finish().
-                // Queremos que si el usuario da al botón "Atrás" en la tienda,
-                // vuelva a este Menú, no se salga de la app.
+            });
+
+
+            Button btnEventos = findViewById(R.id.btnEventos);
+
+            btnEventos.setOnClickListener(v -> {
+                Intent intent = new Intent(Menu.this, EventosActivity.class);
+                startActivity(intent);
             });
         }
 

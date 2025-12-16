@@ -38,4 +38,8 @@ public interface AuthService {
 
     @retrofit2.http.PUT("usuarios/monedas/{email}/{cantidad}")
     Call<Void> updateMonedas(@retrofit2.http.Path("email") String email, @retrofit2.http.Path("cantidad") int cantidad);
+    @GET("usuarios/eventos")
+    Call<List<Evento>> getEventos();
+    @POST("usuarios/eventos")
+    Call<Evento> crearEvento(@Body Evento evento);
 }
