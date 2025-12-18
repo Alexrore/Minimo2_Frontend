@@ -1,2 +1,3 @@
 ﻿# DSA_Minimo2
- implementado el sistema de eventos, aunque falta por pulir la carga de imagenes de los eventos y el registrarse dentro de un evento
+ implementado el sistema de eventos correctamente
+
