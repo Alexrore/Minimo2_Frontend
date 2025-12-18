@@ -35,6 +35,8 @@ public interface AuthService {
 
     @POST("productos/comprar")
     Call<Void> comprarProducto(@Body ObjetoCompra compra);
+    @POST("usuarios/eventos/participar")
+    Call<Void> participarEvento(@Body EventoParticipacion request);
 
     @retrofit2.http.PUT("usuarios/monedas/{email}/{cantidad}")
     Call<Void> updateMonedas(@retrofit2.http.Path("email") String email, @retrofit2.http.Path("cantidad") int cantidad);
